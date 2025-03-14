@@ -22,11 +22,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Миграции
 	migrator := db.Migrator()
+
+	// if err := migrator.DropTable(
+	// 	&models.Router{},
+	// 	&models.Port{},
+	// 	&models.RouterConnection{},
+	// ); err != nil {
+	// 	log.Fatal(err)
+	// }
+
 	if err := migrator.AutoMigrate(
 		&models.Router{},
 		&models.Port{},
+		&models.RouterConnection{},
 	); err != nil {
 		log.Fatal(err)
 	}
@@ -34,7 +43,12 @@ func main() {
 	// Настройка API сервера
 	app := fiber.New()
 	app.Use(logger.New())
-	app.Use(cors.New())
+	app.Use(cors.New(
+		cors.Config{
+			AllowOrigins: "*",
+			AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		},
+	))
 
 	// Инициализация хендлеров
 	handler := handlers.NewHandler(
@@ -48,7 +62,7 @@ func main() {
 
 	// Запуск API сервера в горутине
 	go func() {
-		if err := app.Listen(":5000"); err != nil {
+		if err := app.Listen(":5500"); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -62,15 +76,15 @@ func main() {
 
 	w.SetTitle("Network Management")
 	w.SetSize(1200, 800, webview.HintNone)
-	w.SetSize(800, 600, webview.HintFixed)
+	// w.SetSize(800, 600, webview.HintFixed)
 
 	// Добавляем обработчик для связи с Go
-	w.Bind("getRouters", func() string {
-		return `{"status": "ok"}`
-	})
+	// w.Bind("getRouters", func() string {
+	// return `{"status": "ok"}`
+	// })
 
 	// Загружаем HTML напрямую
-	w.Navigate("http://localhost:5000")
+	w.Navigate("http://localhost:5500")
 
 	// Запуск webview
 	w.Run()

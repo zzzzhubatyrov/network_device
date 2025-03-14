@@ -159,3 +159,48 @@ func (h *Handler) ConfigurePort(c *fiber.Ctx) error {
 		"message": "Port configured successfully",
 	})
 }
+
+func (h *Handler) CreateRouterConnection(c *fiber.Ctx) error {
+	var req models.CreateConnectionRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	response, err := h.services.Devices.CreateConnection(&req)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(response)
+}
+
+func (h *Handler) GetAllConnections(c *fiber.Ctx) error {
+	connections, err := h.services.Devices.GetAllConnections()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(connections)
+}
+
+func (h *Handler) GetConnectionsByRouterIP(c *fiber.Ctx) error {
+	ip := c.Query("ip")
+	if ip == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "IP address is required",
+		})
+	}
+
+	connections, err := h.services.Devices.GetConnectionsByRouterIP(ip)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(connections)
+}

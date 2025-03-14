@@ -102,7 +102,9 @@ type ConfigureRouterRequest struct {
 // ConfigurePortRequest represents the request to configure a port
 type ConfigurePortRequest struct {
 	RouterID    string     `json:"routerId"`
+	Number      int        `json:"number"`
 	PortNumber  int        `json:"portNumber"`
+	Protocol    string     `json:"protocol"`
 	Status      string     `json:"status"`
 	Speed       Speed      `json:"speed"`
 	DuplexMode  DuplexMode `json:"duplexMode"`
@@ -112,4 +114,35 @@ type ConfigurePortRequest struct {
 type ConfigureResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
+}
+
+type RouterConnection struct {
+	ID           uint   `json:"id" gorm:"primaryKey"`
+	RouterFromID uint   `json:"router_from_id"`
+	RouterToID   uint   `json:"router_to_id"`
+	Status       string `json:"status" gorm:"default:'active'"`
+	CreatedAt    string `json:"created_at"`
+}
+
+type CreateConnectionRequest struct {
+	RouterFromIP string `json:"router_from_ip" binding:"required"`
+	RouterToIP   string `json:"router_to_ip" binding:"required"`
+}
+
+type CreateConnectionResponse struct {
+	ID           uint   `json:"id"`
+	RouterFromIP string `json:"router_from_ip"`
+	RouterToIP   string `json:"router_to_ip"`
+	Status       string `json:"status"`
+	CreatedAt    string `json:"created_at"`
+}
+
+type ConnectionInfo struct {
+	ID           uint   `json:"id"`
+	RouterFromIP string `json:"router_from_ip"`
+	RouterToIP   string `json:"router_to_ip"`
+	Status       string `json:"status"`
+	CreatedAt    string `json:"created_at"`
+	FromRouter   Router `json:"from_router"`
+	ToRouter     Router `json:"to_router"`
 }

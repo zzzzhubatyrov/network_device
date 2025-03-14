@@ -23,11 +23,15 @@ func (h *Handler) InitRoute(app *fiber.App) fiber.Handler {
 	api.Get("/routers", h.GetAllRouters)
 
 	api.Post("/routers/connect", h.ConnectRouter)
+	api.Post("/routers/connection", h.CreateRouterConnection)
+	api.Get("/routers/connections", h.GetAllConnections)
+	api.Get("/routers/connections/by-ip", h.GetConnectionsByRouterIP)
+
 	api.Post("/ping", h.PingIP)
 	api.Post("/packet", h.SendPacket)
 
-	api.Post("/routers/configure", h.ConfigureRouter)
-	api.Post("/ports/configure", h.ConfigurePort)
+	api.Patch("/routers/configure", h.ConfigureRouter)
+	api.Patch("/ports/configure", h.ConfigurePort)
 
 	return nil
 }

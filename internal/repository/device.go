@@ -23,7 +23,7 @@ func (r *DeviceRepository) CreateRouter(router *models.Router) error {
 
 func (r *DeviceRepository) GetRouterByID(id uint) (*models.Router, error) {
 	var router models.Router
-	if err := r.db.First(&router, id).Error; err != nil {
+	if err := r.db.Preload("Ports").First(&router, id).Error; err != nil {
 		return nil, err
 	}
 	return &router, nil
@@ -86,5 +86,41 @@ func (r *DeviceRepository) UpdateRouterConfig(routerID uint, updates map[string]
 }
 
 func (r *DeviceRepository) UpdateRouter(router *models.Router) error {
-	return r.db.Save(router).Error
+	return r.db.Updates(router).Error
+}
+
+func (r *DeviceRepository) ConnectionExists(routerFromID, routerToID uint) bool {
+	var count int64
+	r.db.Model(&models.RouterConnection{}).
+		Where("(router_from_id = ? AND router_to_id = ?) OR (router_from_id = ? AND router_to_id = ?)",
+			routerFromID, routerToID, routerToID, routerFromID).
+		Count(&count)
+	return count > 0
+}
+
+func (r *DeviceRepository) CreateConnection(connection *models.RouterConnection) error {
+	return r.db.Create(connection).Error
+}
+
+func (r *DeviceRepository) GetAllConnections() ([]models.RouterConnection, error) {
+	var connections []models.RouterConnection
+	err := r.db.Find(&connections).Error
+	return connections, err
+}
+
+func (r *DeviceRepository) GetConnectionByID(id uint) (*models.RouterConnection, error) {
+	var connection models.RouterConnection
+	err := r.db.First(&connection, id).Error
+	return &connection, err
+}
+
+func (r *DeviceRepository) GetConnectionsByRouterIP(ip string) ([]models.RouterConnection, error) {
+	var router models.Router
+	if err := r.db.Where("ip_address = ?", ip).First(&router).Error; err != nil {
+		return nil, err
+	}
+
+	var connections []models.RouterConnection
+	err := r.db.Where("router_from_id = ? OR router_to_id = ?", router.ID, router.ID).Find(&connections).Error
+	return connections, err
 }
